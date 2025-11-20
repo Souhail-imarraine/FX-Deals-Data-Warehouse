@@ -22,13 +22,17 @@ public class FxDealController {
 
     @PostMapping
     public ResponseEntity<FxDealResponseDto> importDeal(@Valid @RequestBody FxDealRequestDto requestDto) {
+        log.info("Received request to import deal: {}", requestDto.getDealUniqueId());
         FxDealResponseDto response = service.importDeal(requestDto);
+        log.info("Deal imported successfully: {}", requestDto.getDealUniqueId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
     public ResponseEntity<List<FxDealResponseDto>> getAllDeals() {
+        log.info("Received request to fetch all deals");
         List<FxDealResponseDto> deals = service.getAllDeals();
+        log.info("Returning {} deals", deals.size());
         return ResponseEntity.ok(deals);
     }
 }
