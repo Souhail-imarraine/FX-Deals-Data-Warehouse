@@ -31,31 +31,40 @@ public class FxDealService {
 
     @Transactional
     public FxDealResponseDto importDeal(FxDealRequestDto requestDto) {
+        log.info("Processing deal with ID: {}", requestDto.getDealUniqueId());
+        
         // Validate currencies
         validateCurrency(requestDto.getFromCurrency());
         validateCurrency(requestDto.getToCurrency());
+        log.debug("Currency validation passed for deal: {}", requestDto.getDealUniqueId());
 
         // Check for duplicates
         if (repository.existsByDealUniqueId(requestDto.getDealUniqueId())) {
+            log.warn("Duplicate deal detected: {}", requestDto.getDealUniqueId());
             throw new DuplicateDealException("Deal with ID " + requestDto.getDealUniqueId() + " already exists");
         }
 
         // Convert and save
         FxDeal entity = mapper.toEntity(requestDto);
         FxDeal savedEntity = repository.save(entity);
+        log.info("Deal saved successfully: {}", savedEntity.getDealUniqueId());
         
         return mapper.toResponseDto(savedEntity);
     }
 
     public List<FxDealResponseDto> getAllDeals() {
-        return repository.findAll()
+        log.info("Fetching all deals from database");
+        List<FxDealResponseDto> deals = repository.findAll()
                 .stream()
                 .map(mapper::toResponseDto)
                 .toList();
+        log.info("Found {} deals", deals.size());
+        return deals;
     }
 
     private void validateCurrency(String currency) {
         if (!VALID_CURRENCIES.contains(currency.toUpperCase())) {
+            log.error("Invalid currency code: {}", currency);
             throw new ValidationException("Invalid currency code: " + currency);
         }
     }
